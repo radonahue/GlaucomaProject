@@ -17,21 +17,18 @@ data<-cbind(data, d)
 data$PatientID2<-data$Patient.ID
 test<-data%>%group_by(PatientID2)%>%summarize(count=n())
 data<-left_join(data, test, by="PatientID2")
-d2<-distinct(data, PatientID2, count, Age.at.SLT)
+d2<-distinct(data, PatientID2, count, Age.at.SLT, Gender, Ethnicity)
+d2$count<-ifelse(d2$count==2, 1, 0)
 
+ggplot(d2, aes(x=Age.at.SLT, fill=as.factor(count)))+geom_bar()+ggtitle("Initial SLT Ages")+labs(fill="Duplicate Eye Flag")+  scale_fill_manual(values=c("1"="blue", "0"="gray")) 
 
-ggplot(d2, aes(x=Age.at.SLT, fill=as.factor(count)))+geom_bar()+ggtitle("Initial SLT Ages with Duplicate Patients")
+ggplot(d2, aes(x=Ethnicity, fill=Gender))+geom_bar()+ggtitle("Ethnicity and Gender of Patients")
 
-ggplot(data, aes(x=Ethnicity, fill=Gender))+geom_bar()+ggtitle("Ethnicity of Patients") 
+ggplot(data, aes(x=Eye))+geom_bar(fill="purple")+ggtitle("Left and Right Eye Counts")
 
-ggplot(data, aes(x=Eye))+geom_bar()+ggtitle("Ethnicity of Patients") 
+ggplot(data, aes(x=`Latest.Pre-IOP`, y=`Post-IOP-5yr`))+geom_point(color="#4B9094")+ggtitle("Latest Pre OP vs Post OP 5 yrs")
 
-
-#add in labels for counts?
-
-ggplot(data, aes(x=`Latest.Pre-IOP`, y=`Post-IOP-5yr`))+geom_point()
-
-ggplot(data, aes(x=`Latest.Pre-IOP`, y=`Pre-VA`))+geom_point()
+ggplot(data, aes(x=`Pre-VA`, y=`Post-IOP-5yr`))+geom_point(color="#784B94")+ggtitle("Pre-VA vs Post OP 5 yrs")
 
 #Chose to just use variables where all the data was present, but there's plenty missing
 
