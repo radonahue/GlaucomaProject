@@ -1,0 +1,67 @@
+---
+title: "EDA_1"
+author: "Jinyu"
+date: "4/27/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+```
+
+## Import Data
+
+
+```{r}
+df1 = read_xlsx("data/Data Collection-for stats.xlsx")
+
+df2 = df1 %>% select(contains('IOP') | contains('interventions'))
+colnames(df2)
+df2 = df2 %>% select(-c("Other interventions","Post-IOP- Last","Post-IOP- Last mo's"))
+df2 = df2 %>% mutate_at(c(5),as.factor)
+colnames(df2) <- c("Latest Pre-IOP","Post-IOP","Post-IOP-3yr","Post-IOP-5yr","interventions")
+
+df2_stat = df2 %>% group_by(interventions) %>% summarise_at(c(1:4),mean)
+# levels(df2$`# interventions`) <- c("0","1","2")
+```
+
+## Including Plots
+
+
+```{r, echo=FALSE}
+library(hrbrthemes)
+library(GGally)
+library(viridis)
+
+# data <- iris
+# ggparcoord(df2,columns = 1:4, groupColumn = 5)
+
+ggparcoord(data = df2,
+           columns = 1:4, groupColumn = 5, order = c(1:4),
+           showPoints = T,
+           title = "Parallel Coordinate Plot for IOP",
+           alphaLines = 0.3
+           ) +
+  # scale_color_viridis(discrete = T) +
+  theme_ipsum()+
+  theme(
+    plot.title = element_text(size=10)
+  )
+  
+
+ggparcoord(data = df2_stat,
+           columns = 2:5, groupColumn = 1, order = c(2:5),
+           showPoints = T,
+           title = "Parallel Coordinate Plot for mean(IOP) grouped by interventions",
+           alphaLines = 1
+           ) +
+  # scale_color_viridis(discrete = T) +
+  theme_ipsum()+
+  theme(
+    plot.title = element_text(size=10)
+  )
+```
+
