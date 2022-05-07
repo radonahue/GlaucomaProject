@@ -36,4 +36,25 @@ r<-lm(`Post-IOP-5yr`~Age.at.SLT+`Pre-VA`+`Latest.Pre-IOP`+Gender+Eye+Ethnicity, 
 summary(r)
 
 
+#Random intercept model per patient
+
+library(lme4)
+r1<-lmer(`Post-IOP-5yr`~Age.at.SLT+`Pre-VA`+`Latest.Pre-IOP`+Gender+Eye+Ethnicity+(1|Patient.ID), data=data)
+summary(r1)
+ranef(r1)
+
+#Trying to do a random slope model results in error
+# r2<-lmer(`Post-IOP-5yr`~Eye+(Eye|Patient.ID), data=data)
+# summary(r2)
+# ranef(r2)
+
+#Best Subset
+# 
+# library(leaps)
+# r2<-regsubsets(`Post-IOP-5yr`~., data=data, method="forward")
+#errors
+
+
+
+
 
