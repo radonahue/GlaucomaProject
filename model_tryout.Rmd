@@ -1,0 +1,88 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(maditr)
+library(tidyverse)
+library(dplyr)
+library(arsenal)
+library(mltools)
+library(data.table)
+pacman::p_load(boot, glmnet, ISLR, pls, leaps, MASS)
+```
+
+```{r}
+
+df1 = read_xlsx("/Users/xuchen/Desktop/Data.xlsx")
+
+# Binary encoding for catrgorial variable
+cate_cols <- unlist(lapply(df1, is.character))
+data_cate <- df1[, cate_cols]
+
+# Only subset columns with no NAs
+data_cate <- data_cate[c(1:5, 7,8)]
+
+dt <-data.frame(lapply(data_cate,factor))
+data_cate_oh <- one_hot(as.data.table(dt))
+
+# Identify numeric columns
+num_cols <- unlist(lapply(df1, is.numeric))         
+num_cols
+
+# Subset numeric columns of data
+data_num <- df1[ , num_cols]                        
+
+data_pre <- cbind(data_num, data_cate_oh)
+
+data_try <- data_pre[complete.cases(data_pre),][c(3:140)]
+
+set.seed(232)
+# split data into training set and test set:
+train = sample(1:dim(data_try)[1], dim(data_try)[1]*0.7)
+test <- -train
+ga.train <- data_try[train, ]
+ga.test <- data_try[test, ]
+```
+
+
+```{r}
+# try out the lasso regression
+train_lasso_mat_ga <- model.matrix(`Post-IOP- Last` ~ ., data = ga.train)
+test_lasso_mat_ga <- model.matrix(`Post-IOP- Last` ~ . , data = ga.test)
+
+# choose Lambda by cross-validation:
+cv_out_lasso_ga <- cv.glmnet(train_lasso_mat_ga, ga.train$`Post-IOP- Last`, alpha = 1)
+bestlam_lasso <- cv_out_lasso_ga$lambda.min
+
+plot(cv_out_lasso_ga)
+
+cv_out_lasso_ga$lambda
+
+`%notin%` <- Negate(`%in%`)
+
+c<-coef(cv_out_lasso_ga,s='lambda.min',exact=TRUE)
+inds<-which(c!=0)
+variables<-row.names(c)[inds]
+variables<-variables[variables %notin% '(Intercept)']
+variables
+
+# fit a lasso regression model:
+
+fit_lasso_ga <- glmnet(train_lasso_mat_ga, ga.train$`Post-IOP- Last`, alpha = 1, lambda = bestlam_lasso)
+predict_lasso_ga <- predict(fit_lasso_ga, newx = test_lasso_mat_ga)
+test_error_lasso_ga <- mean((predict_lasso_ga - ga.test$`Post-IOP- Last`)^2)
+test_error_lasso_ga
+
+
+coef(fit_lasso_ga)
+
+bestlam_lasso
+```
+
+
