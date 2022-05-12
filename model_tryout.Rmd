@@ -18,6 +18,9 @@ pacman::p_load(boot, glmnet, ISLR, pls, leaps, MASS)
 ```
 
 ```{r}
+
+df1 = read_xlsx("/Users/xuchen/Desktop/Data.xlsx")
+
 # Binary encoding for catrgorial variable
 cate_cols <- unlist(lapply(df1, is.character))
 data_cate <- df1[, cate_cols]
@@ -39,7 +42,7 @@ data_pre <- cbind(data_num, data_cate_oh)
 
 data_try <- data_pre[complete.cases(data_pre),][c(3:140)]
 
-set.seed(2022)
+set.seed(2333)
 # split data into training set and test set:
 train = sample(1:dim(data_try)[1], dim(data_try)[1]*0.7)
 test <- -train
